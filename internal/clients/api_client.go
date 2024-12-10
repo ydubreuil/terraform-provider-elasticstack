@@ -477,6 +477,7 @@ func buildKibanaClient(cfg config.Client) (*kibana.Client, error) {
 
 func buildAlertingClient(cfg config.Client, httpClient *http.Client) *alerting.APIClient {
 	alertingConfig := alerting.Configuration{
+		Debug:     logging.IsDebugOrHigher(),
 		UserAgent: cfg.UserAgent,
 		Servers: alerting.ServerConfigurations{
 			{
@@ -490,6 +491,7 @@ func buildAlertingClient(cfg config.Client, httpClient *http.Client) *alerting.A
 
 func buildDataViewsClient(cfg config.Client, httpClient *http.Client) *data_views.APIClient {
 	dvConfig := data_views.Configuration{
+		Debug:     logging.IsDebugOrHigher(),
 		UserAgent: cfg.UserAgent,
 		Servers: data_views.ServerConfigurations{
 			{
@@ -530,6 +532,7 @@ func buildConnectorsClient(cfg config.Client, httpClient *http.Client) (*connect
 
 func buildSloClient(cfg config.Client, httpClient *http.Client) *slo.APIClient {
 	sloConfig := slo.Configuration{
+		Debug:     logging.IsDebugOrHigher(),
 		UserAgent: cfg.UserAgent,
 		Servers: slo.ServerConfigurations{
 			{
