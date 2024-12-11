@@ -6,12 +6,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/mitchellh/mapstructure"
 )
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var model modelV0
+	var model kibanaSavedObjectModelV0
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -72,8 +71,6 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		resp.Diagnostics.AddError("unable to marshal object", err.Error())
 		return
 	}
-
-	model.Imported = types.StringValue(string(imported))
 
 	result, err := kibanaClient.KibanaSavedObject.Import(imported, true, model.SpaceID.ValueString())
 	if err != nil {

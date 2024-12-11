@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var model modelV0
+	var model kibanaSavedObjectModelV0
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {

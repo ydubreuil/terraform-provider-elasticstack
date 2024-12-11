@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var model modelV0
+	var model kibanaSavedObjectModelV0
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -46,7 +46,9 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	// remove fields carrying state
 	delete(object, "created_at")
+	delete(object, "created_by")
 	delete(object, "updated_at")
+	delete(object, "updated_by")
 	delete(object, "version")
 	delete(object, "migrationVersion")
 	delete(object, "namespaces")

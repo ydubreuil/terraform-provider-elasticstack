@@ -9,7 +9,7 @@ import (
 )
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var model modelV0
+	var model kibanaSavedObjectModelV0
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -37,7 +37,9 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 
 	// remove fields carrying state
 	delete(result, "created_at")
+	delete(result, "created_by")
 	delete(result, "updated_at")
+	delete(result, "updated_by")
 	delete(result, "version")
 	delete(result, "migrationVersion")
 	delete(result, "namespaces")
