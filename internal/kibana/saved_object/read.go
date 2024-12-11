@@ -9,7 +9,7 @@ import (
 )
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var model kibanaSavedObjectModelV0
+	var model ksoModelV0
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -22,14 +22,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	kibanaType, kibanaId, err := model.GetTypeAndObjectID()
-	if err != nil {
-		resp.Diagnostics.AddError("unable to get kibana type and object id", err.Error())
-		return
-	}
-
-	spaceId := model.SpaceID
-	result, err := kibanaClient.KibanaSavedObject.Get(kibanaType, kibanaId, spaceId.ValueString())
+	result, err := kibanaClient.KibanaSavedObject.Get(model.Type.ValueString(), model.ID.ValueString(), model.SpaceID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("failed to get saved object", err.Error())
 		return
@@ -47,12 +40,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	object, err := json.Marshal(result)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to marshal saved object", err.Error())
-		return
-	}
-
-	resourceId := result["type"].(string) + "/" + result["id"].(string)
-	if resourceId != kibanaType+"/"+kibanaId {
-		resp.Diagnostics.AddError("ID changed for the resource", err.Error())
 		return
 	}
 

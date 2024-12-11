@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var model kibanaSavedObjectModelV0
+	var model ksoModelV0
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -20,13 +20,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	kibanaType, kibanaId, err := model.GetTypeAndObjectID()
-	if err != nil {
-		resp.Diagnostics.AddError("unable to get kibana type and object id", err.Error())
-		return
-	}
-
-	if err := kibanaClient.KibanaSavedObject.Delete(kibanaType, kibanaId, model.SpaceID.ValueString()); err != nil {
+	if err := kibanaClient.KibanaSavedObject.Delete(model.Type.ValueString(), model.ID.ValueString(), model.SpaceID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("failed to delete saved object", err.Error())
 		return
 	}

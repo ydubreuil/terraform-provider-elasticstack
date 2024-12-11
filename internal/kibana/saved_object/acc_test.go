@@ -15,19 +15,19 @@ func TestAccResourceSavedObject(t *testing.T) {
 			{
 				Config: testAccResourceSavedObjectCreate(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "dashboard/f799de20-6ac7-4736-8aff-a0d20538053b"),
+					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "f799de20-6ac7-4736-8aff-a0d20538053b"),
 				),
 			},
 			{
 				Config: testAccResourceSavedObjectUpdate(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "dashboard/f799de20-6ac7-4736-8aff-a0d20538053b"),
+					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "f799de20-6ac7-4736-8aff-a0d20538053b"),
 				),
 			},
 			{
 				Config: testAccResourceSavedObjectRecreate(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "dashboard/f799de20-6ac7-4736-8aff-a0d20538053c"),
+					resource.TestCheckResourceAttr("elasticstack_kibana_saved_object.settings", "id", "f799de20-6ac7-4736-8aff-a0d20538053c"),
 				),
 			},
 		},

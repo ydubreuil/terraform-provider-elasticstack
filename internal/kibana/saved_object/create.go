@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var model kibanaSavedObjectModelV0
+	var model ksoModelV0
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 	if resp.Diagnostics.HasError() {
@@ -37,12 +37,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	resourceId := objType.(string) + "/" + objId.(string)
-	if err != nil {
-		resp.Diagnostics.AddError("unable to compute ID", err.Error())
-		return
-	}
-	model.ID = types.StringValue(resourceId)
+	model.ID = types.StringValue(objId.(string))
+	model.Type = types.StringValue(objType.(string))
 
 	// remove fields carrying state
 	delete(object, "created_at")
@@ -67,13 +63,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	model.Imported = types.StringValue(string(imported))
 
-	result, err := kibanaClient.KibanaSavedObject.Import(imported, true, model.SpaceID.ValueString())
+	result, err := kibanaClient.KibanaSavedObject.Import(imported, false, model.SpaceID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("failed to import saved objects", err.Error())
 		return
 	}
 
-	var importResponse kibanaSavedObjectResponse
+	var importResponse ksoResponse
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:  &importResponse,
 		TagName: "json",
@@ -99,29 +95,29 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 }
 
-type kibanaSavedObjectResponse struct {
-	Success        bool            `json:"success"`
-	SuccessCount   int             `json:"successCount"`
-	Errors         []importError   `json:"errors"`
-	SuccessResults []importSuccess `json:"successResults"`
+type ksoResponse struct {
+	Success        bool               `json:"success"`
+	SuccessCount   int                `json:"successCount"`
+	Errors         []ksoImportError   `json:"errors"`
+	SuccessResults []ksoImportSuccess `json:"successResults"`
 }
 
-type importSuccess struct {
-	ID            string     `tfsdk:"id" json:"id"`
-	Type          string     `tfsdk:"type" json:"type"`
-	DestinationID string     `tfsdk:"destination_id" json:"destinationId"`
-	Meta          importMeta `tfsdk:"meta" json:"meta"`
+type ksoImportSuccess struct {
+	ID            string        `tfsdk:"id" json:"id"`
+	Type          string        `tfsdk:"type" json:"type"`
+	DestinationID string        `tfsdk:"destination_id" json:"destinationId"`
+	Meta          ksoImportMeta `tfsdk:"meta" json:"meta"`
 }
 
-type importError struct {
-	ID    string          `tfsdk:"id" json:"id"`
-	Type  string          `tfsdk:"type" json:"type"`
-	Title string          `tfsdk:"title" json:"title"`
-	Error importErrorType `tfsdk:"error" json:"error"`
-	Meta  importMeta      `tfsdk:"meta" json:"meta"`
+type ksoImportError struct {
+	ID    string             `tfsdk:"id" json:"id"`
+	Type  string             `tfsdk:"type" json:"type"`
+	Title string             `tfsdk:"title" json:"title"`
+	Error ksoImportErrorType `tfsdk:"error" json:"error"`
+	Meta  ksoImportMeta      `tfsdk:"meta" json:"meta"`
 }
 
-func (ie importError) String() string {
+func (ie ksoImportError) String() string {
 	title := ie.Title
 	if title == "" {
 		title = ie.Meta.Title
@@ -130,11 +126,11 @@ func (ie importError) String() string {
 	return fmt.Sprintf("[%s] error on [%s] with ID [%s] and title [%s]", ie.Error.Type, ie.Type, ie.ID, title)
 }
 
-type importErrorType struct {
+type ksoImportErrorType struct {
 	Type string `tfsdk:"type" json:"type"`
 }
 
-type importMeta struct {
+type ksoImportMeta struct {
 	Icon  string `tfsdk:"icon" json:"icon"`
 	Title string `tfsdk:"title" json:"title"`
 }
