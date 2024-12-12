@@ -28,14 +28,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	// remove fields carrying state
-	delete(result, "created_at")
-	delete(result, "created_by")
-	delete(result, "updated_at")
-	delete(result, "updated_by")
-	delete(result, "version")
-	delete(result, "migrationVersion")
-	delete(result, "namespaces")
+	ksoRemoveUnwantedFields(result)
 
 	object, err := json.Marshal(result)
 	if err != nil {

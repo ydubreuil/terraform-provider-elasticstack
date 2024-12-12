@@ -2,11 +2,9 @@ package saved_object
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -18,36 +16,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	var object map[string]any
-	err := json.Unmarshal([]byte(model.Object.ValueString()), &object)
+	err := model.UpdateModelWithObject()
 	if err != nil {
-		resp.Diagnostics.AddError("invalid JSON in object", err.Error())
+		resp.Diagnostics.AddError("failed to update model from object", err.Error())
 		return
 	}
-
-	var objType any
-	var objId any
-	var ok bool
-	if objType, ok = object["type"]; !ok {
-		resp.Diagnostics.AddError("missing 'type' field in JSON object", err.Error())
-		return
-	}
-	if objId, ok = object["id"]; !ok {
-		resp.Diagnostics.AddError("missing 'id' field in JSON object", err.Error())
-		return
-	}
-
-	model.ID = types.StringValue(objId.(string))
-	model.Type = types.StringValue(objType.(string))
-
-	// remove fields carrying state
-	delete(object, "created_at")
-	delete(object, "created_by")
-	delete(object, "updated_at")
-	delete(object, "updated_by")
-	delete(object, "version")
-	delete(object, "migrationVersion")
-	delete(object, "namespaces")
 
 	kibanaClient, err := r.client.GetKibanaClient()
 	if err != nil {
@@ -55,15 +28,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	imported, err := json.Marshal(object)
-	if err != nil {
-		resp.Diagnostics.AddError("unable to marshal object", err.Error())
-		return
-	}
-
-	model.Imported = types.StringValue(string(imported))
-
-	result, err := kibanaClient.KibanaSavedObject.Import(imported, false, model.SpaceID.ValueString())
+	result, err := kibanaClient.KibanaSavedObject.Import([]byte(model.Imported.ValueString()), false, model.SpaceID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("failed to import saved objects", err.Error())
 		return
